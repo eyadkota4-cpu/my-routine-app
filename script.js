@@ -2,11 +2,7 @@ const daysAr = ["الأحد", "الاثنين", "الثلاثاء", "الأرب�
 let routineData = JSON.parse(localStorage.getItem('weeklyRoutine')) || null;
 
 function init() {
-    if (!routineData) {
-        showSetup();
-    } else {
-        showToday();
-    }
+    if (!routineData) showSetup(); else showToday();
 }
 
 function showSetup() {
@@ -14,15 +10,15 @@ function showSetup() {
     document.getElementById('setupPage').classList.remove('hidden');
     const container = document.getElementById('daysSetupContainer');
     container.innerHTML = '';
-
     daysAr.forEach((day, index) => {
         const currentTasks = routineData ? routineData[index].tasks.map(t => t.text).join('\n') : '';
         container.innerHTML += `
             <div class="day-input-group">
-                <label>📍 مهام يوم ${day}:</label>
-                <textarea id="input-day-${index}" placeholder="اكتب كل مهمة في سطر منفصل...">${currentTasks}</textarea>
+                <label>📍 مهام ${day}:</label>
+                <textarea id="input-day-${index}" rows="3">${currentTasks}</textarea>
             </div>`;
     });
+    window.scrollTo(0,0);
 }
 
 function saveWeeklyRoutine() {
@@ -38,23 +34,21 @@ function saveWeeklyRoutine() {
 function showToday() {
     document.getElementById('setupPage').classList.add('hidden');
     document.getElementById('mainPage').classList.remove('hidden');
-    
     const todayIndex = new Date().getDay();
-    const todayData = routineData[todayIndex];
-    
-    document.getElementById('dayTitle').innerText = `اليوم: ${todayData.dayName} 🎯`;
+    document.getElementById('dayTitle').innerText = `اليوم: ${daysAr[todayIndex]} 🎯`;
     renderTasks(todayIndex);
+    window.scrollTo(0,0);
 }
 
 function renderTasks(dayIndex) {
     const list = document.getElementById('taskList');
     const tasks = routineData[dayIndex].tasks;
     list.innerHTML = '';
-
     tasks.forEach((task, i) => {
         const li = document.createElement('li');
+        li.onclick = () => toggleTask(dayIndex, i); // الضغط على السطر كله يعلم صح
         li.innerHTML = `
-            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${dayIndex}, ${i})">
+            <input type="checkbox" ${task.completed ? 'checked' : ''}>
             <span class="${task.completed ? 'done' : ''}">${task.text}</span>
         `;
         list.appendChild(li);
@@ -73,13 +67,10 @@ function updateProgress(tasks) {
     const completed = tasks.filter(t => t.completed).length;
     const percent = Math.round((completed / tasks.length) * 100);
     document.getElementById('progressBar').style.width = percent + "%";
-    
-    let level = "تحتاج للبدء ☕";
+    let level = "بداية موفقة ☕";
     if (percent >= 90) level = "بطل خارق! 🦸‍♂️";
-    else if (percent >= 70) level = "مستوى وحش 🦁";
-    else if (percent >= 40) level = "ماشي حالك 👍";
-    
-    document.getElementById('levelStatus').innerText = `مستواك اليوم: ${level} (${percent}%)`;
+    else if (percent >= 70) level = "وحش الروتين 🦁";
+    document.getElementById('levelStatus').innerText = `المستوى: ${level} (${percent}%)`;
 }
 
 init();
